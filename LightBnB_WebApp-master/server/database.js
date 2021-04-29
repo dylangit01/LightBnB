@@ -130,8 +130,9 @@ const getAllProperties = (options, limit = 10) => {
     `;
   
   if (owner_id) {
+    console.log('user logged innnnnnnnnnnnn');
     const conditionsOption1 = [city, owner_id, minimum_price_per_night, maximum_price_per_night, minimum_rating];
-    if (!conditionsOption1.includes(undefined)) {
+    if (conditionsOption1.includes(false)) {
       queryParams = [`%${city}%`, owner_id, minimum_price_per_night, maximum_price_per_night, minimum_rating, limit];
       queryString += `
       WHERE city ILIKE $1 AND owner_id = $2 AND cost_per_night BETWEEN $3 AND $4
@@ -146,7 +147,7 @@ const getAllProperties = (options, limit = 10) => {
     }
 
     const conditionsOption2 = [owner_id, minimum_price_per_night, maximum_price_per_night, minimum_rating];
-    if (!conditionsOption2.includes(undefined)) {
+    if (conditionsOption2.includes(false)) {
       queryParams = [owner_id, minimum_price_per_night, maximum_price_per_night, minimum_rating, limit];
       queryString += `
       WHERE owner_id = $1 AND cost_per_night BETWEEN $2 AND $3
@@ -161,7 +162,7 @@ const getAllProperties = (options, limit = 10) => {
     }
 
     const conditionsOption3 = [city, owner_id, minimum_price_per_night, maximum_price_per_night];
-    if (!conditionsOption3.includes(undefined)) {
+    if (conditionsOption3.includes(false)) {
       queryParams = [`%${city}%`, owner_id, minimum_price_per_night, maximum_price_per_night, limit];
       queryString += `
       WHERE city ILIKE $1 AND owner_id = $2 AND cost_per_night BETWEEN $3 AND $4
@@ -176,7 +177,7 @@ const getAllProperties = (options, limit = 10) => {
     }
 
     const conditionsOption4 = [owner_id, minimum_price_per_night, maximum_price_per_night];
-    if (!conditionsOption4.includes(undefined)) {
+    if (conditionsOption4.includes(false)) {
       queryParams = [owner_id, minimum_price_per_night, maximum_price_per_night, limit];
       queryString += `
       WHERE owner_id = $1 AND cost_per_night BETWEEN $2 AND $3
@@ -191,7 +192,7 @@ const getAllProperties = (options, limit = 10) => {
     }
 
       const conditionsOption5 = [minimum_price_per_night, maximum_price_per_night, minimum_rating];
-      if (!conditionsOption5.includes(undefined)) {
+      if (conditionsOption5.includes(false)) {
         queryParams = [owner_id, minimum_price_per_night, maximum_price_per_night, minimum_rating, limit];
         queryString += `
         WHERE owner_id = $1 AND cost_per_night BETWEEN $2 AND $3
@@ -225,6 +226,7 @@ const getAllProperties = (options, limit = 10) => {
 
     // If has city only
     if (city) {
+      console.log('cityyyyyyyyyyyy');
       queryParams.push(`%${city}%`);
       queryString += `AND city ILIKE $${queryParams.length}`;
     }
@@ -248,8 +250,9 @@ const getAllProperties = (options, limit = 10) => {
     
   } else {
 
+    console.log('user NOT logged innnnnnnnnnnnn');
     const conditionsOption6 = [city, minimum_price_per_night, maximum_price_per_night, minimum_rating];
-    if (!conditionsOption6.includes(undefined)) {
+    if (conditionsOption6.includes(false)) {
       queryParams = [`%${city}%`, minimum_price_per_night, maximum_price_per_night, minimum_rating, limit];
       queryString += `
       WHERE city ILIKE $1 AND cost_per_night BETWEEN $2 AND $3
@@ -264,7 +267,7 @@ const getAllProperties = (options, limit = 10) => {
     }
 
     const conditionsOption7 = [city, minimum_price_per_night, maximum_price_per_night];
-    if (!conditionsOption7.includes(undefined)) {
+    if (conditionsOption7.includes(false)) {
       queryParams = [`%${city}%`, minimum_price_per_night, maximum_price_per_night, limit];
       queryString += `
       WHERE city ILIKE $1 AND cost_per_night BETWEEN $2 AND $3
@@ -279,7 +282,7 @@ const getAllProperties = (options, limit = 10) => {
     }
 
     const conditionsOption8 = [minimum_price_per_night, maximum_price_per_night, minimum_rating];
-    if (!conditionsOption8.includes(undefined)) {
+    if (conditionsOption8.includes(false)) {
       queryParams = [minimum_price_per_night, maximum_price_per_night, minimum_rating, limit];
       queryString += `
         WHERE cost_per_night BETWEEN $1 AND $2
@@ -294,7 +297,7 @@ const getAllProperties = (options, limit = 10) => {
     }
 
     const conditionsOption9 = [minimum_price_per_night, maximum_price_per_night];
-    if (!conditionsOption9.includes(undefined)) {
+    if (conditionsOption9.includes(false)) {
       queryParams = [minimum_price_per_night, maximum_price_per_night, limit];
       queryString += `
         WHERE cost_per_night BETWEEN $1 AND $2
@@ -302,6 +305,20 @@ const getAllProperties = (options, limit = 10) => {
         ORDER BY cost_per_night
         LIMIT $3;
         `;
+      return pool
+        .query(queryString, queryParams)
+        .then((res) => res.rows)
+        .catch((err) => console.log(err.message));
+    }
+
+    if (minimum_rating && city) {
+      queryParams = [`%${city}%`, minimum_rating, limit];
+      queryString += `
+          WHERE city ILIKE $1
+          GROUP BY properties.id HAVING avg(property_reviews.rating) >= $2
+          ORDER BY cost_per_night
+          LIMIT $3
+          `;
       return pool
         .query(queryString, queryParams)
         .then((res) => res.rows)
@@ -325,7 +342,7 @@ const getAllProperties = (options, limit = 10) => {
     // If has city only
     if (city) {
       queryParams.push(`%${city}%`);
-      queryString += `city ILIKE $${queryParams.length}`;
+      queryString += `WHERE city ILIKE $${queryParams.length}`;
     }
 
     // Passed limit
